@@ -3,6 +3,8 @@ package com.hunterdavis.popthemballoons;
 import java.util.Random;
 
 import com.crittercism.app.Crittercism;
+import com.google.ads.AdRequest;
+import com.google.ads.AdView;
 import com.hunterdavis.gameutils.title.TitleScreen;
 
 import android.app.Activity;
@@ -22,14 +24,14 @@ public class PopThemBalloons extends Activity {
 		setContentView(R.layout.game_select_screen);
 
 		ImageButton easyButton = (ImageButton) findViewById(R.id.easyButton);
-		ImageButton mediumButton = (ImageButton) findViewById(R.id.easyButton);
-		ImageButton hardButton = (ImageButton) findViewById(R.id.easyButton);
+		ImageButton mediumButton = (ImageButton) findViewById(R.id.mediumButton);
+		ImageButton hardButton = (ImageButton) findViewById(R.id.hardButton);
 
 		easyButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				startPopBallons(v.getContext(), 3 + (new Random().nextInt(2)));
+				startPopBallons(v.getContext(), 1 + (new Random().nextInt(4)));
 			}
 		});
 
@@ -37,7 +39,7 @@ public class PopThemBalloons extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				startPopBallons(v.getContext(), 5 + (new Random().nextInt(5)));
+				startPopBallons(v.getContext(), 5 + (new Random().nextInt(3)));
 			}
 		});
 
@@ -45,9 +47,14 @@ public class PopThemBalloons extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				startPopBallons(v.getContext(), 15 + (new Random().nextInt(15)));
+				startPopBallons(v.getContext(), 8 + (new Random().nextInt(8)));
 			}
 		});
+		
+		// Look up the AdView as a resource and load a request.
+		AdView adView = (AdView) this.findViewById(R.id.adView);
+		adView.loadAd(new AdRequest());
+
 
 		// create a title screen and throw it up
 		TitleScreen.startTitleScreen(getApplicationContext(),

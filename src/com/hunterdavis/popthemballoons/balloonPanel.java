@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -50,7 +51,7 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 
 	/** The m context. */
 	public Context mContext;
-	
+
 	/* The Default Game Clock Time */
 	private long gameClockTime = 5000;
 
@@ -117,8 +118,8 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 							R.raw.popxcolorballoonscreditstheme,
 							R.raw.popxcolorballoonscredits,
 							R.drawable.hunterredbaloon, "You popped "
-									+ getBaloonPopCount(colorToWin) + " " + colorToWinName
-									+ " balloons");
+									+ getBaloonPopCount(colorToWin) + " "
+									+ colorToWinName + " balloons");
 					doLose();
 				}
 				return true;
@@ -144,7 +145,6 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 		super(context, attrs);
 		mContext = context;
 		surfaceCreated = false;
-		gameClockTimer = new GameClockCountDownTimer(gameClockTime, 10, gameClockTime);
 
 		getHolder().addCallback(this);
 		setFocusable(true);
@@ -177,6 +177,11 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 			// Bitmap kangoo = BitmapFactory.decodeResource(getResources(),
 			// R.drawable.kangoo);
 			surfaceCreated = true;
+			// 1.8 seconds per balloon, will be harder at higher numbers
+			gameClockTime = numBalloonsToWin * 1800;
+
+			gameClockTimer = new GameClockCountDownTimer(gameClockTime, 10,
+					gameClockTime);
 		}
 	}
 
@@ -190,6 +195,10 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		surfaceCreated = false;
 
+	}
+
+	public void setGameClockTime(long newTime) {
+		gameClockTime = newTime;
 	}
 
 	/**
@@ -210,7 +219,7 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 		colors[2] = new namedColor(Color.DKGRAY, "Dark Gray");
 		colors[3] = new namedColor(Color.GRAY, "Gray");
 		colors[4] = new namedColor(Color.GREEN, "Green");
-		colors[5] = new namedColor(Color.LTGRAY, "Light Gray");
+		colors[5] = new namedColor(Color.argb(255,253, 215, 228), "Pink");
 		colors[6] = new namedColor(Color.MAGENTA, "Magenta");
 		colors[7] = new namedColor(Color.RED, "Red");
 		colors[8] = new namedColor(Color.YELLOW, "Yellow");
@@ -234,14 +243,6 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 		}
 		for (int i = numBaloonsCanWin; i < numBalloonsToWin; i++) {
 			makeOneBaloonInArrayColorToWin();
-		}
-		
-		if(numBalloons < 5) {
-			gameClockTime = numBalloons * 2000;
-		}else if (numBalloons < 15) {
-			gameClockTime = numBalloons * 1800;
-		}else if (numBalloons < 2) {
-			gameClockTime = numBalloons * 1800;
 		}
 
 		firstRun = false;
@@ -268,8 +269,10 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 	 */
 	public void updateGameState() {
 
-		if (gameClockTimer.gameOver == true) {
-			gameOver = true;
+		if (gameClockTimer != null) {
+			if (gameClockTimer.gameOver == true) {
+				gameOver = true;
+			}
 		}
 
 		if (gameOver == true) {
@@ -294,11 +297,19 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 		if (firstRun == true) {
 			return;
 		}
+		int tickValue;
+		if(numBalloons < 5) {
+			tickValue = 1;
+		}else if (numBalloons < 8) {
+			tickValue = 2;
+		}else {
+			tickValue = 3;
+		}
 		for (int i = 0; i < baloons.length; i++) {
 			baloons[i].age++;
 
 			baloons[i].updateXandYLoc(baloons[i].xLocation,
-					(baloons[i].yLocation - 1));
+					(baloons[i].yLocation - tickValue));
 
 			if (baloons[i].yLocation - baloons[i].size - 2 < 0) {
 				baloons[i].updateXandYLoc(baloons[i].xLocation, mHeight);
@@ -435,7 +446,11 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 		// draw the game clock
 		paint.setColor(Color.BLACK);
 		paint.setTextSize(14);
-		canvas.drawText(String.format("%.2f", gameClockTimer.gameClock / 1000)
+		float gameTime = 0;
+		if(gameClockTimer != null) {
+			gameTime = gameClockTimer.gameClock;
+		}
+		canvas.drawText(String.format("%.2f", gameTime / 1000)
 				.toString() + " Seconds", (mWidth - (mWidth / 10)),
 				mHeight / 30, paint);
 
@@ -523,12 +538,11 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 	 */
 	public void setNumBaloonsToWin(int numBaloonsToSet) {
 		numBalloonsToWin = numBaloonsToSet;
-		if(numBalloonsToWin < 11) {
+		if (numBalloonsToWin < 11) {
 			numBalloons = numBalloonsToWin * 10;
 		} else {
 			numBalloons = 100;
 		}
-		
 
 	}
 
