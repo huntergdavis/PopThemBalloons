@@ -178,7 +178,15 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 			// R.drawable.kangoo);
 			surfaceCreated = true;
 			// 1.8 seconds per balloon, will be harder at higher numbers
-			gameClockTime = numBalloonsToWin * 1800;
+
+
+            gameClockTime = numBalloonsToWin * 1800;
+
+            // testing showed 1800ms per balloon was too hard on 'easy'
+            if(numBalloonsToWin < 5) {
+                gameClockTime = numBalloonsToWin * 3600;
+            }
+
 
 			gameClockTimer = new GameClockCountDownTimer(gameClockTime, 10,
 					gameClockTime);
@@ -232,11 +240,18 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 
 		baloons = new Balloon[numBalloons];
 		int numBaloonsCanWin = 0;
+        int balloonSize = 6 + rand.nextInt(20);
+        if(numBalloonsToWin < 5) {
+            balloonSize = 25 + rand.nextInt(30);
+        }else if (numBalloonsToWin < 10) {
+            balloonSize = 20 + rand.nextInt(10);
+        }
+
 		for (int i = 0; i < numBalloons; i++) {
 			baloons[i] = new Balloon(rand.nextInt(15 + (mWidth - 15)),
 					rand.nextInt(15 + (mHeight - 15)),
 					colors[rand.nextInt(colors.length)].color,
-					6 + rand.nextInt(20));
+                    balloonSize);
 			if (baloons[i].color == colorToWin) {
 				numBaloonsCanWin++;
 			}
@@ -494,7 +509,8 @@ class balloonPanel extends GameSurfaceView implements SurfaceHolder.Callback {
 		// first draw the background
 		paint.setColor(Color.LTGRAY);
 		paint.setStyle(Style.FILL);
-		canvas.drawRect(numBalloonsToWin * 10, mHeight / 10, mWidth, 0, paint);
+		canvas.drawRect(statusBackgroundLeft, statusBackgroundTop,
+                statusBackgroundRight, statusBackgroundBottom, paint);
 
 		// draw a gray box
 		canvas.drawRect(statusBackgroundLeft, statusBackgroundTop,
